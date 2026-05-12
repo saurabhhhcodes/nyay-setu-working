@@ -65,13 +65,13 @@ public class SecurityConfig {
             } else {
                 boolean hasWildcard = origins.stream().anyMatch(o -> o.contains("*"));
                 if (hasWildcard) {
+                    // allowedOriginPatterns supports credentials safely (unlike raw allowedOrigins("*"))
+                    // Spring validates that the Origin header matches the pattern before reflecting it
                     configuration.setAllowedOriginPatterns(origins);
-                    // Security: Cannot allow credentials with wildcard patterns
-                    configuration.setAllowCredentials(false);
                 } else {
                     configuration.setAllowedOrigins(origins);
-                    configuration.setAllowCredentials(true);
                 }
+                configuration.setAllowCredentials(true);
             }
         } else {
             // SAFE DEFAULT: Allow local development origins only
