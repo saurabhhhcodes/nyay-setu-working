@@ -155,7 +155,7 @@
             <artifactId>flyway-core</artifactId>
         </dependency>
         <dependency>
-            <groupid>org.flywaydb</groupId>
+            <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
 
