@@ -137,7 +137,11 @@ export const meetingAPI = {
 export const vakilFriendAPI = {
     startSession: () => api.post('/api/vakil-friend/start'),
     startCaseSession: (caseId) => api.post(`/api/vakil-friend/case/${caseId}/start`),
-    sendMessage: (sessionId, message) => api.post(`/api/vakil-friend/chat/${sessionId}`, { message }),
+    sendMessage: (sessionId, message, options = {}) => api.post(`/api/vakil-friend/chat/${sessionId}`, {
+        message,
+        language: options.language || 'en',
+        audioData: options.audioData || null,
+    }),
     completeSession: (sessionId) => api.post(`/api/vakil-friend/complete/${sessionId}`),
     getSession: (sessionId) => api.get(`/api/vakil-friend/session/${sessionId}`),
     getSessions: () => api.get('/api/vakil-friend/sessions'),

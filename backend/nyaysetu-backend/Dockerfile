@@ -13,6 +13,11 @@ FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
 RUN groupadd -r spring && useradd -r -g spring spring
+
+# Pre-create the file-upload directory with correct ownership so that
+# FileStorageService can write to it when running as the non-root spring user.
+RUN mkdir -p /app/uploads && chown -R spring:spring /app/uploads
+
 USER spring:spring
 
 COPY --from=build /app/target/*.jar app.jar

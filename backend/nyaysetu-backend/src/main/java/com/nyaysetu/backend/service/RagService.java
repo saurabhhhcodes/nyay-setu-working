@@ -1,25 +1,24 @@
 package com.nyaysetu.backend.service;
 
 import dev.langchain4j.data.document.Document;
-import dev.langchain4j.data.document.DocumentParser;
-import dev.langchain4j.data.document.parser.TextDocumentParser;
-import dev.langchain4j.data.document.source.FileSystemSource;
+import dev.langchain4j.data.document.DocumentSplitter;
+import dev.langchain4j.data.document.splitter.DocumentSplitters;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.AllMiniLmL6V2EmbeddingModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingMatch;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
-import dev.langchain4j.data.document.splitter.DocumentSplitters;
-import dev.langchain4j.data.document.DocumentSplitter;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -29,7 +28,13 @@ import java.util.stream.Collectors;
 /**
  * RAG (Retrieval-Augmented Generation) Service
  * Manages the In-Memory Vector Database and Local Embeddings for Indian Legal Context.
+ *
+ * This service is DISABLED by default (rag.enabled=false) to avoid loading
+ * the ~90MB ONNX embedding model in memory-constrained Docker environments.
+ * Enable it via: rag.enabled=true in application.properties or the RAG_ENABLED
+ * environment variable.
  */
+@ConditionalOnProperty(name = "rag.enabled", havingValue = "true", matchIfMissing = false)
 @Service
 @Slf4j
 public class RagService {
@@ -52,29 +57,33 @@ public class RagService {
     public void init() {
         log.info("📚 Loading Indian Legal Knowledge Base into Vector Database...");
         try {
-            // Check if directory exists, if not just skip (we'll create it later)
-            ClassPathResource resource = new ClassPathResource("legal_docs");
-            if (!resource.exists()) {
-                log.warn("⚠️ legal_docs folder not found in resources. RAG database will be empty.");
+            // Use PathMatchingResourcePatternResolver so this works both on the
+            // filesystem (dev) AND inside a Spring Boot fat JAR (Docker/Render).
+            // ClassPathResource.getFile() would throw FileNotFoundException inside a JAR
+            // because the URL protocol is 'jar:' not 'file:'.
+            PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+            Resource[] resources = resolver.getResources("classpath:legal_docs/*.txt");
+
+            if (resources == null || resources.length == 0) {
+                log.warn("⚠️ No .txt files found in legal_docs/. RAG database will be empty.");
                 return;
             }
 
-            File folder = resource.getFile();
-            if (folder.isDirectory()) {
-                File[] files = folder.listFiles((dir, name) -> name.endsWith(".txt"));
-                if (files != null && files.length > 0) {
-                    for (File file : files) {
-                        ingestDocument(file.toPath());
-                    }
-                    log.info("✅ Successfully loaded {} legal documents into Vector DB", files.length);
-                } else {
-                    log.info("ℹ️ No .txt documents found in legal_docs folder.");
+            int loaded = 0;
+            for (Resource resource : resources) {
+                try (InputStream is = resource.getInputStream()) {
+                    String content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+                    ingestText(content, resource.getFilename());
+                    loaded++;
+                } catch (IOException e) {
+                    log.warn("⚠️ Failed to load legal doc '{}': {}", resource.getFilename(), e.getMessage());
                 }
             }
+            log.info("✅ Successfully loaded {} legal documents into Vector DB", loaded);
         } catch (IOException e) {
-            log.error("❌ Failed to load legal documents: {}", e.getMessage());
-            // Fallback for running inside JAR where getFile() doesn't work.
-            // For a robust production app we'd load via stream, but this is fine for now.
+            log.warn("⚠️ Could not scan legal_docs/ — RAG database will be empty: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("❌ Unexpected error during RAG init: {}", e.getMessage());
         }
     }
 

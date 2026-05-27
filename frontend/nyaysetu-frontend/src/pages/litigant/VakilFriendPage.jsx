@@ -229,7 +229,7 @@ export default function VakilFriendChat() {
 
     const sendMessage = async (audioData = null, overrideText = null) => {
         const textToSend = overrideText || inputMessage;
-        if ((!textToSend.trim() && !audioData) || isLoading) return;
+        if ((!textToSend.trim() && !audioData) || isLoading || isStarting) return;
 
         const userMessage = textToSend.trim();
         // Only clear the input message box if we aren't overriding it (standard UI flow)
@@ -265,8 +265,9 @@ export default function VakilFriendChat() {
                 audioData: audioData // This will be null for browser speech
             };
 
-            const response = await axios.post(`${API_BASE_URL}/api/vakil-friend/chat/${sessionId}`, payload, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            const response = await vakilFriendAPI.sendMessage(sessionId, userMessage, {
+                language: language,
+                audioData: audioData,
             });
 
             const data = response.data;
