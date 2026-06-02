@@ -8,27 +8,37 @@ This document helps new contributors understand how the project is structured.
 
 nyay-setu-working/
 ├── frontend/          # React.js frontend application
-├── backend/           # Node.js backend API
+├── backend/           # Spring Boot backend services
 ├── nlp-orchestrator/  # NLP and AI services
 ├── docs/              # Documentation files
 ├── assets/            # Images and static files
-└── infra/             # Infrastructure and deployment scripts
+├── lawgpt-service/    # AI-related legal services
+├── signaling-server/  # Real-time communication services
+└── infra/scripts/     # Infrastructure and deployment scripts
 
 ## Three Main Services
 
 ### 1. Frontend (frontend/nyaysetu-frontend)
-- Built with React.js
+- Built with React.js and Vite
 - User interface for citizens and lawyers
-- Connects to backend via REST API
-
-### 2. Backend (backend/)
-- Built with Node.js and Spring Boot
+- Communicates with backend services
+  
+### 2. Backend (backend/nyaysetu-backend)
+- Built with Spring Boot (Java)
 - Handles all business logic
 - REST API endpoints
 
 ### 3. NLP Orchestrator (nlp-orchestrator/)
-- Handles AI and language processing
-- Connects legal queries to relevant information
+- FastAPI-based service
+- Handles AI and NLP processing
+- Supports legal assistance features
+
+### Additional Components
+- assets/ : README banners and static assets
+- docs/ : Project documentation
+- .github/ : GitHub workflows and templates
+- lawgpt-service/ : AI-related legal services
+- signaling-server/ : Real-time communication services 
 
 ## Getting Started
 For local setup, refer to LOCAL_RUN.md
