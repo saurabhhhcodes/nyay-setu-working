@@ -43,7 +43,6 @@ const CaseDetailPage = lazy(() => import('./pages/litigant/CaseDetailPage'));
 const HearingsPage = lazy(() => import('./pages/litigant/HearingsPage'));
 const LawyerChatPage = lazy(() => import('./pages/litigant/LawyerChatPage'));
 const ProfilePage = lazy(() => import('./pages/litigant/ProfilePage'));
-const ForensicsPage = lazy(() => import('./pages/litigant/ForensicsPage'));
 const DocumentGeneratePage = lazy(() => import('./pages/litigant/DocumentGeneratePage'));
 const FindLawyerPage = lazy(() => import('./pages/litigant/FindLawyerPage'));
 const LawyerFeedbackPage = lazy(() => 
@@ -174,7 +173,6 @@ function App({ swRegistration }) {
                                     <Route path="find-lawyer" element={<FindLawyerPage />} />
                                     <Route path="feedback" element={<LawyerFeedbackPage />} />
                                     <Route path="profile" element={<ProfilePage />} />
-                                    <Route path="forensics" element={<ForensicsPage />} />
                                     <Route path="generate-document" element={<DocumentGeneratePage />} />
                                 </Route>
 
