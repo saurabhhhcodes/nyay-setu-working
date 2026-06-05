@@ -119,25 +119,11 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return children;
 };
 
-function KeyboardAccessibilityProvider({ user }) {
-    const [showShortcuts, setShowShortcuts] = useState(false);
-
-    useKeyboardShortcuts({
-        user,
-        onOpenHelp: () => setShowShortcuts(true),
-        onCloseHelp: () => setShowShortcuts(false),
-    });
-
-    return (
-        <KeyboardShortcutsModal
-            isOpen={showShortcuts}
-            onClose={() => setShowShortcuts(false)}
-        />
-    );
-}
+import { useOfflineSync } from './hooks/useOfflineSync';
 
 function App({ swRegistration }) {
-    const { initAuth, user } = useAuthStore();
+    const { initAuth } = useAuthStore();
+    useOfflineSync();
 
     useEffect(() => {
         initAuth();
